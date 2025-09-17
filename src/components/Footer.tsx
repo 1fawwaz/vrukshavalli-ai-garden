@@ -72,7 +72,7 @@ const Footer: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5" />
-                <span>+91 98765 43210</span>
+                <span>+91 07719890777</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5" />

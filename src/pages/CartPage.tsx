@@ -1,44 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { plants } from '@/data/plants';
+import { useCart } from '@/contexts/CartContext';
 
 const CartPage: React.FC = () => {
-  // Mock cart data - in a real app this would come from context/state management
-  const [cartItems, setCartItems] = useState([
-    { plant: plants[0], quantity: 2 },
-    { plant: plants[2], quantity: 1 },
-  ]);
+  const { items, updateQuantity, removeFromCart, getTotalPrice } = useCart();
 
-  const updateQuantity = (plantId: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeItem(plantId);
-      return;
-    }
-    setCartItems(prev => 
-      prev.map(item => 
-        item.plant.id === plantId 
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
-  };
-
-  const removeItem = (plantId: string) => {
-    setCartItems(prev => prev.filter(item => item.plant.id !== plantId));
-  };
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.plant.price * item.quantity), 0);
+  const subtotal = getTotalPrice();
   const shipping = subtotal > 1000 ? 0 : 100;
   const tax = subtotal * 0.18; // 18% GST
   const total = subtotal + shipping + tax;
 
-  if (cartItems.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto text-center">
@@ -67,13 +44,13 @@ const CartPage: React.FC = () => {
           </Link>
         </Button>
         <h1 className="text-3xl font-bold">Shopping Cart</h1>
-        <Badge variant="secondary">{cartItems.length} items</Badge>
+        <Badge variant="secondary">{items.length} items</Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
-          {cartItems.map((item) => (
+          {items.map((item) => (
             <Card key={item.plant.id} className="overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex gap-4">
@@ -96,7 +73,7 @@ const CartPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(item.plant.id)}
+                        onClick={() => removeFromCart(item.plant.id)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -8,11 +8,13 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlantCard from '@/components/PlantCard';
 import { plants } from '@/data/plants';
+import { useCart } from '@/contexts/CartContext';
 
 const PlantDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart } = useCart();
 
   const plant = plants.find(p => p.id === id);
   
@@ -184,6 +186,7 @@ const PlantDetailPage: React.FC = () => {
                 size="lg"
                 disabled={!plant.inStock}
                 className="flex-1"
+                onClick={() => addToCart(plant, quantity)}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart - ₹{plant.price * quantity}
@@ -252,7 +255,7 @@ const PlantDetailPage: React.FC = () => {
                 </div>
                 <Separator className="my-6" />
                 <p className="text-muted-foreground">
-                  Need more help? Contact our plant experts via WhatsApp at +91 98765 43210 
+                  Need more help? Contact our plant experts via WhatsApp at +91 07719890777 
                   for personalized care advice.
                 </p>
               </CardContent>

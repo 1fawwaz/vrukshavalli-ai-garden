@@ -15,7 +15,7 @@ const CustomerDashboard: React.FC = () => {
     id: '1',
     name: 'Priya Sharma',
     email: 'priya@example.com',
-    phone: '+91 98765 43210',
+    phone: '+91 07719890777',
     address: '123, Green Valley, Ratnagiri, Maharashtra - 415612',
     joinDate: new Date('2023-01-15'),
     totalOrders: 12,

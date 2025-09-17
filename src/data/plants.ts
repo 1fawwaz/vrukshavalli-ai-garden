@@ -14,10 +14,12 @@ export const plants: Plant[] = [
     image: indoorPlantsImg,
     description: 'The stunning Swiss Cheese Plant with beautiful fenestrated leaves that will transform any indoor space.',
     careTips: [
-      'Bright, indirect sunlight',
-      'Water when top inch of soil is dry',
-      'Humidity 60-70%',
-      'Temperature 18-27°C'
+      'Place in bright, indirect sunlight near east or west-facing windows',
+      'Water when top 1-2 inches of soil feels dry (usually weekly)',
+      'Maintain humidity levels between 60-70% using a humidifier or pebble tray',
+      'Keep temperature between 18-27°C for optimal growth',
+      'Provide moss pole or trellis for aerial roots to climb',
+      'Feed with balanced liquid fertilizer monthly during growing season'
     ],
     features: ['Air purifying', 'Easy care', 'Fast growing', 'Instagram worthy'],
     inStock: true,
@@ -32,10 +34,12 @@ export const plants: Plant[] = [
     image: indoorPlantsImg,
     description: 'Large, glossy violin-shaped leaves make this the perfect statement plant for modern homes.',
     careTips: [
-      'Bright, indirect light',
-      'Water weekly in summer',
-      'Wipe leaves regularly',
-      'Avoid cold drafts'
+      'Position in bright, indirect light - avoid harsh direct sunlight',
+      'Water weekly in summer, less frequently in winter',
+      'Wipe leaves weekly with damp cloth to remove dust and improve photosynthesis',
+      'Keep away from cold drafts, air conditioners, and heating vents',
+      'Rotate plant weekly for even growth',
+      'Use well-draining potting mix and ensure proper drainage'
     ],
     features: ['Statement piece', 'Large leaves', 'Designer favorite', 'Instagram worthy'],
     inStock: true,
@@ -50,10 +54,12 @@ export const plants: Plant[] = [
     image: indoorPlantsImg,
     description: 'The ultimate low-maintenance plant that thrives in any condition and purifies air efficiently.',
     careTips: [
-      'Low to bright indirect light',
-      'Water every 2-3 weeks',
-      'Very drought tolerant',
-      'Perfect for beginners'
+      'Tolerates low to bright indirect light - perfect for any room',
+      'Water sparingly every 2-3 weeks, allowing soil to dry completely',
+      'Extremely drought tolerant - overwatering is the main cause of problems',
+      'Perfect for beginners and frequent travelers',
+      'Can survive in temperatures from 15-29°C',
+      'Rarely needs repotting - only when severely rootbound'
     ],
     features: ['Nearly indestructible', 'Air purifying', 'Low light tolerant', 'Beginner friendly'],
     inStock: true,
@@ -69,10 +75,12 @@ export const plants: Plant[] = [
     image: outdoorPlantsImg,
     description: 'Vibrant flowering shrub that brings tropical beauty to your garden with continuous blooms.',
     careTips: [
-      'Full sun to partial shade',
-      'Water daily in summer',
-      'Regular pruning needed',
-      'Feed monthly'
+      'Plant in location receiving 6+ hours of direct sunlight daily',
+      'Water daily during summer, especially in hot weather',
+      'Prune regularly to encourage bushy growth and more flowers',
+      'Feed with phosphorus-rich fertilizer monthly for better blooms',
+      'Protect from strong winds which can damage delicate flowers',
+      'Mulch around base to retain moisture and regulate soil temperature'
     ],
     features: ['Continuous blooms', 'Attracts butterflies', 'Heat tolerant', 'Colorful flowers'],
     inStock: true,
@@ -87,10 +95,12 @@ export const plants: Plant[] = [
     image: outdoorPlantsImg,
     description: 'Stunning flowering vine with papery bracts in brilliant colors that cascade beautifully.',
     careTips: [
-      'Full sun required',
-      'Drought tolerant once established',
-      'Prune after flowering',
-      'Support with trellis'
+      'Requires full sun (6+ hours) for best flowering and growth',
+      'Once established, very drought tolerant - avoid overwatering',
+      'Prune after flowering season to maintain shape and size',
+      'Provide sturdy trellis, fence, or wall support for climbing',
+      'Pinch growing tips to encourage bushier growth',
+      'Protect from frost in winter months'
     ],
     features: ['Drought tolerant', 'Colorful bracts', 'Climbing vine', 'Long blooming'],
     inStock: true,
@@ -107,10 +117,12 @@ export const plants: Plant[] = [
     image: exoticPlantsImg,
     description: 'Majestic tropical plant with striking orange and blue flowers that resemble exotic birds.',
     careTips: [
-      'Bright indirect to partial direct sun',
-      'High humidity required',
-      'Water when soil starts to dry',
-      'Regular misting'
+      'Provide bright indirect to partial direct sunlight for 4-6 hours',
+      'Maintain high humidity (50-60%) with regular misting or humidifier',
+      'Water when top inch of soil starts to dry - keep consistently moist',
+      'Mist leaves regularly to increase humidity and clean foliage',
+      'Use well-draining, organic-rich potting mix',
+      'Flowering requires plant maturity (3-5 years) and optimal conditions'
     ],
     features: ['Exotic flowers', 'Dramatic foliage', 'Conversation starter', 'Premium quality'],
     inStock: true,
@@ -125,10 +137,12 @@ export const plants: Plant[] = [
     image: exoticPlantsImg,
     description: 'Curated collection of premium orchids featuring Phalaenopsis and Dendrobium varieties.',
     careTips: [
-      'Filtered bright light',
-      'Special orchid bark medium',
-      'Water with ice cubes weekly',
-      'High humidity environment'
+      'Place in bright, filtered light - never direct sunlight',
+      'Use specialized orchid bark medium for proper drainage',
+      'Water with 2-3 ice cubes weekly or lukewarm water sparingly',
+      'Maintain high humidity environment (40-70%)',
+      'Ensure good air circulation around plants',
+      'Fertilize monthly with diluted orchid fertilizer during growing season'
     ],
     features: ['Premium varieties', 'Long-lasting blooms', 'Gift worthy', 'Care guide included'],
     inStock: true,
@@ -143,10 +157,12 @@ export const plants: Plant[] = [
     image: exoticPlantsImg,
     description: 'Fascinating collection including Venus Flytraps, Pitcher Plants, and Sundews.',
     careTips: [
-      'Bright indirect light',
-      'Use distilled water only',
-      'High humidity required',
-      'No fertilizer needed'
+      'Provide bright indirect light or use grow lights for 12-14 hours',
+      'Use only distilled, rainwater, or reverse osmosis water',
+      'Maintain high humidity (50-80%) with humidity domes or terrariums',
+      'Never fertilize - they get nutrients from insects they catch',
+      'Keep soil consistently moist but not waterlogged',
+      'Allow 2-3 month winter dormancy period for temperate species'
     ],
     features: ['Unique specimens', 'Educational', 'Natural pest control', 'Conversation piece'],
     inStock: true,

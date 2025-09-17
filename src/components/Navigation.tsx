@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search, Leaf } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingCart, User, Menu, X, Search, Leaf, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface NavigationProps {
-  cartItems?: number;
-}
-
-const Navigation: React.FC<NavigationProps> = ({ cartItems = 0 }) => {
+const Navigation: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { getTotalItems } = useCart();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -23,13 +24,34 @@ const Navigation: React.FC<NavigationProps> = ({ cartItems = 0 }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleCartClick = () => {
+    navigate('/cart');
+  };
+
+  const handleAuthClick = () => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
         {/* Top bar */}
         <div className="hidden md:flex items-center justify-between py-2 text-sm text-muted-foreground border-b border-border">
           <div className="flex items-center gap-6">
-            <span>📞 +91 98765 43210</span>
+            <span>📞 +91 07719890777</span>
             <span>📍 Ratnagiri, Maharashtra</span>
           </div>
           <div className="flex items-center gap-4">
@@ -83,17 +105,30 @@ const Navigation: React.FC<NavigationProps> = ({ cartItems = 0 }) => {
 
           {/* Action buttons */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <User className="w-4 h-4 mr-2" />
-              Account
-            </Button>
+            {user ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={handleAuthClick}>
+                  <User className="w-4 h-4 mr-2" />
+                  {user.name}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Button variant="ghost" size="sm" className="hidden md:flex" onClick={handleAuthClick}>
+                <User className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            )}
             
-            <Button variant="ghost" size="sm" className="relative">
+            <Button variant="ghost" size="sm" className="relative" onClick={handleCartClick}>
               <ShoppingCart className="w-4 h-4 mr-2" />
               Cart
-              {cartItems > 0 && (
+              {getTotalItems() > 0 && (
                 <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-accent text-accent-foreground">
-                  {cartItems}
+                  {getTotalItems()}
                 </Badge>
               )}
             </Button>
@@ -138,13 +173,36 @@ const Navigation: React.FC<NavigationProps> = ({ cartItems = 0 }) => {
             ))}
             
             <div className="pt-4 border-t border-border">
-              <Link
-                to="/account"
-                className="block px-4 py-3 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                My Account
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to={user.role === 'admin' ? '/admin' : '/dashboard'}
+                    className="block px-4 py-3 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {user.role === 'admin' ? 'Admin Dashboard' : 'My Account'}
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-4 py-3 text-sm font-medium"
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="block px-4 py-3 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login / Register
+                </Link>
+              )}
             </div>
           </div>
         )}
