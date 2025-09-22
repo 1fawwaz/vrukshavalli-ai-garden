@@ -51,14 +51,16 @@ const Navigation: React.FC = () => {
         {/* Top bar */}
         <div className="hidden md:flex items-center justify-between py-2 text-sm text-muted-foreground border-b border-border">
           <div className="flex items-center gap-6">
-            <span>📞 +91 07719890777</span>
+            <a href="https://wa.me/c/917719890777" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              📞 +91 07719890777 (WhatsApp)
+            </a>
             <span>📍 Ratnagiri, Maharashtra</span>
           </div>
           <div className="flex items-center gap-4">
             <span>Follow us:</span>
-            <Link to="#" className="hover:text-primary transition-colors">
+            <a href="https://www.instagram.com/vrukshavalli_ratnagiri" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
               @Vrukshavalli_Ratnagiri
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -123,15 +125,18 @@ const Navigation: React.FC = () => {
               </Button>
             )}
             
-            <Button variant="ghost" size="sm" className="relative" onClick={handleCartClick}>
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Cart
-              {getTotalItems() > 0 && (
-                <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-accent text-accent-foreground">
-                  {getTotalItems()}
-                </Badge>
-              )}
-            </Button>
+            {/* Hide cart for admin users */}
+            {user?.role !== 'admin' && (
+              <Button variant="ghost" size="sm" className="relative" onClick={handleCartClick}>
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Cart
+                {getTotalItems() > 0 && (
+                  <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-accent text-accent-foreground">
+                    {getTotalItems()}
+                  </Badge>
+                )}
+              </Button>
+            )}
 
             {/* Mobile menu button */}
             <Button

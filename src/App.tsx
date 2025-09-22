@@ -15,6 +15,7 @@ import CustomerDashboard from "@/pages/CustomerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
+import CareGuide from '@/pages/CareGuide';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/dashboard" element={<CustomerDashboard />} />
                   <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/care-guide" element={<CareGuide />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

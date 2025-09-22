@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Heart, Share2, ShoppingCart, Minus, Plus, Shield, Truck, Leaf } from 'lucide-react';
+import { ArrowLeft, Star, Heart, Share2, ShoppingCart, Minus, Plus, Shield, Truck, Leaf, MessageCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,12 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlantCard from '@/components/PlantCard';
 import { plants } from '@/data/plants';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PlantDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   const plant = plants.find(p => p.id === id);
   
@@ -180,36 +182,65 @@ const PlantDetailPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <Button
-                variant="nature"
-                size="lg"
-                disabled={!plant.inStock}
-                className="flex-1"
-                onClick={() => addToCart(plant, quantity)}
-              >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart - ₹{plant.price * quantity}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setIsWishlisted(!isWishlisted)}
-                className={isWishlisted ? 'text-red-500 border-red-200' : ''}
-              >
-                <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
-              </Button>
-              
-              <Button variant="outline" size="lg">
-                <Share2 className="w-5 h-5" />
-              </Button>
-            </div>
+            {/* Hide buying/shopping features for admin */}
+            {user?.role !== 'admin' && (
+              <div className="flex gap-2">
+                <Button
+                  variant="nature"
+                  size="lg"
+                  disabled={!plant.inStock}
+                  className="flex-1"
+                  onClick={() => addToCart(plant, quantity)}
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Add to Cart - ₹{plant.price * quantity}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={isWishlisted ? 'text-red-500 border-red-200' : ''}
+                >
+                  <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+                </Button>
+                
+                <Button variant="outline" size="lg">
+                  <Share2 className="w-5 h-5" />
+                </Button>
+              </div>
+            )}
 
-            {!plant.inStock && (
-              <p className="text-destructive font-medium">
-                This plant is currently out of stock. We'll notify you when it's available again.
-              </p>
+            {/* WhatsApp contact for admin or when out of stock */}
+            {(user?.role === 'admin' || !plant.inStock) && (
+              <div className="bg-primary/10 p-4 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <MessageCircle className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    {user?.role === 'admin' ? (
+                      <>
+                        <p className="font-medium text-primary">Admin View</p>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          You're viewing this as an admin. Customer features are hidden.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium text-primary">Need Help?</p>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          This plant is out of stock. Contact us for availability updates.
+                        </p>
+                      </>
+                    )}
+                    <Button variant="outline" size="sm" asChild>
+                      <a href="https://wa.me/c/917719890777" target="_blank" rel="noopener noreferrer">
+                        WhatsApp: 07719890777
+                        <ArrowRight className="w-3 h-3 ml-2" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
