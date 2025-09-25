@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, Search, Leaf, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import ProductSearch from './ProductSearch';
 
 const Navigation: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -79,13 +79,7 @@ const Navigation: React.FC = () => {
 
           {/* Search bar */}
           <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search plants..."
-                className="pl-10 bg-muted/50 border-border"
-              />
-            </div>
+            <ProductSearch />
           </div>
 
           {/* Navigation items - Desktop */}
@@ -154,12 +148,8 @@ const Navigation: React.FC = () => {
         {isMenuOpen && (
           <div className="lg:hidden border-t border-border py-4 space-y-2">
             {/* Mobile search */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search plants..."
-                className="pl-10 bg-muted/50 border-border"
-              />
+            <div className="mb-4">
+              <ProductSearch onClose={() => setIsMenuOpen(false)} />
             </div>
 
             {navItems.map((item) => (

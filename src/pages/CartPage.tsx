@@ -1,14 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2, Truck, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCart } from '@/contexts/CartContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const CartPage: React.FC = () => {
+  const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   const { items, updateQuantity, removeFromCart, getTotalPrice } = useCart();
+
+  const handleQuantityUpdate = async (plantId: string, newQuantity: number) => {
+    setLoadingItems(prev => new Set(prev).add(plantId));
+    // Simulate loading for better UX
+    await new Promise(resolve => setTimeout(resolve, 300));
+    updateQuantity(plantId, newQuantity);
+    setLoadingItems(prev => {
+      const next = new Set(prev);
+      next.delete(plantId);
+      return next;
+    });
+  };
+
+  const handleRemoveItem = async (plantId: string) => {
+    setLoadingItems(prev => new Set(prev).add(plantId));
+    await new Promise(resolve => setTimeout(resolve, 300));
+    removeFromCart(plantId);
+    setLoadingItems(prev => {
+      const next = new Set(prev);
+      next.delete(plantId);
+      return next;
+    });
+  };
 
   const subtotal = getTotalPrice();
   const shipping = subtotal > 1000 ? 0 : 100;
@@ -73,10 +99,15 @@ const CartPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeFromCart(item.plant.id)}
+                        onClick={() => handleRemoveItem(item.plant.id)}
                         className="text-destructive hover:text-destructive"
+                        disabled={loadingItems.has(item.plant.id)}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {loadingItems.has(item.plant.id) ? (
+                          <LoadingSpinner size="sm" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                     
@@ -87,21 +118,35 @@ const CartPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => updateQuantity(item.plant.id, item.quantity - 1)}
+                            onClick={() => handleQuantityUpdate(item.plant.id, item.quantity - 1)}
                             className="h-8 w-8 p-0"
+                            disabled={loadingItems.has(item.plant.id) || item.quantity <= 1}
                           >
-                            <Minus className="w-3 h-3" />
+                            {loadingItems.has(item.plant.id) ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <Minus className="w-3 h-3" />
+                            )}
                           </Button>
                           <span className="px-3 py-1 text-sm min-w-[2rem] text-center">
-                            {item.quantity}
+                            {loadingItems.has(item.plant.id) ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              item.quantity
+                            )}
                           </span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => updateQuantity(item.plant.id, item.quantity + 1)}
+                            onClick={() => handleQuantityUpdate(item.plant.id, item.quantity + 1)}
                             className="h-8 w-8 p-0"
+                            disabled={loadingItems.has(item.plant.id)}
                           >
-                            <Plus className="w-3 h-3" />
+                            {loadingItems.has(item.plant.id) ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <Plus className="w-3 h-3" />
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -144,10 +189,20 @@ const CartPage: React.FC = () => {
               </div>
               
               {shipping > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Add ₹{1000 - subtotal} more for free shipping!
-                </p>
+                <Alert>
+                  <Truck className="h-4 w-4" />
+                  <AlertDescription>
+                    Add ₹{1000 - subtotal} more for FREE shipping!
+                  </AlertDescription>
+                </Alert>
               )}
+              
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  30-day replacement guarantee • Cash on Delivery available
+                </AlertDescription>
+              </Alert>
             </CardContent>
             
             <CardFooter className="flex-col gap-4">

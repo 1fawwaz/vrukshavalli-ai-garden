@@ -231,7 +231,6 @@ const CategoryPage: React.FC = () => {
                 <PlantCard
                   key={plant.id}
                   plant={plant}
-                  onAddToCart={(plant) => console.log('Add to cart:', plant)}
                 />
               ))}
             </div>

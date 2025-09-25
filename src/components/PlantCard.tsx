@@ -1,19 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingCart, Heart } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Plant } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import QuickViewModal from './QuickViewModal';
 
 interface PlantCardProps {
   plant: Plant;
-  onAddToCart?: (plant: Plant) => void;
 }
 
-const PlantCard: React.FC<PlantCardProps> = ({ plant, onAddToCart }) => {
+const PlantCard: React.FC<PlantCardProps> = ({ plant }) => {
+  const [showQuickView, setShowQuickView] = useState(false);
   const { addToCart } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -34,13 +35,26 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onAddToCart }) => {
             {discountPercentage}% OFF
           </Badge>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-2 right-2 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        >
-          <Heart className="w-4 h-4" />
-        </Button>
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-background/80 hover:bg-background"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowQuickView(true);
+            }}
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-background/80 hover:bg-background"
+          >
+            <Heart className="w-4 h-4" />
+          </Button>
+        </div>
         {!plant.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <Badge variant="destructive">Out of Stock</Badge>
@@ -113,7 +127,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onAddToCart }) => {
           {!isAdmin && (
             <Button
               variant="nature"
-              onClick={() => (onAddToCart ? onAddToCart(plant) : addToCart(plant))}
+              onClick={() => addToCart(plant)}
               disabled={!plant.inStock}
               className="flex-1"
             >
@@ -123,6 +137,12 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onAddToCart }) => {
           )}
         </div>
       </CardFooter>
+      
+      <QuickViewModal
+        plant={plant}
+        isOpen={showQuickView}
+        onClose={() => setShowQuickView(false)}
+      />
     </Card>
   );
 };

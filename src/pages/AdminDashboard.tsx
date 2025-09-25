@@ -4,11 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { plants } from '@/data/plants';
+import AdminPlantManager from '@/components/AdminPlantManager';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard: React.FC = () => {
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
@@ -68,9 +66,11 @@ const AdminDashboard: React.FC = () => {
               <p className="text-muted-foreground">Welcome back, Admin</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Eye className="w-4 h-4 mr-2" />
-                View Site
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Site
+                </Link>
               </Button>
               <Button variant="nature" size="sm">
                 <Plus className="w-4 h-4 mr-2" />
@@ -111,80 +111,7 @@ const AdminDashboard: React.FC = () => {
 
           {/* Plants Management */}
           <TabsContent value="plants" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Plant Inventory</h2>
-              <Button variant="nature">
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Plant
-              </Button>
-            </div>
-
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-border">
-                      <tr>
-                        <th className="text-left p-4 font-semibold">Plant Name</th>
-                        <th className="text-left p-4 font-semibold">Category</th>
-                        <th className="text-left p-4 font-semibold">Price</th>
-                        <th className="text-left p-4 font-semibold">Stock</th>
-                        <th className="text-left p-4 font-semibold">Rating</th>
-                        <th className="text-left p-4 font-semibold">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {plants.slice(0, 8).map((plant) => (
-                        <tr key={plant.id} className="border-b border-border hover:bg-muted/50">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden">
-                                <img
-                                  src={plant.image}
-                                  alt={plant.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div>
-                                <p className="font-semibold">{plant.name}</p>
-                                <p className="text-sm text-muted-foreground">#{plant.id}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <Badge variant="secondary">
-                              {plant.category.charAt(0).toUpperCase() + plant.category.slice(1)}
-                            </Badge>
-                          </td>
-                          <td className="p-4 font-semibold">₹{plant.price}</td>
-                          <td className="p-4">
-                            <Badge variant={plant.inStock ? 'default' : 'destructive'}>
-                              {plant.inStock ? 'In Stock' : 'Out of Stock'}
-                            </Badge>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm">{plant.rating}</span>
-                              <span className="text-muted-foreground text-sm">({plant.reviews})</span>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminPlantManager />
           </TabsContent>
 
           {/* Orders Management */}
