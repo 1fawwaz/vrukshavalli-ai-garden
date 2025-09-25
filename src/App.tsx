@@ -11,6 +11,7 @@ import Home from "@/pages/Home";
 import CategoryPage from "@/pages/CategoryPage";
 import PlantDetailPage from "@/pages/PlantDetailPage";
 import CartPage from "@/pages/CartPage";
+import CheckoutPage from "@/pages/CheckoutPage";
 import CustomerDashboard from "@/pages/CustomerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import LoginPage from '@/pages/LoginPage';
@@ -36,6 +37,7 @@ const App = () => (
                   <Route path="/category/:category" element={<CategoryPage />} />
                   <Route path="/plant/:id" element={<PlantDetailPage />} />
                   <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/dashboard" element={<CustomerDashboard />} />

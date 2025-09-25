@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Plant } from '@/types';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PlantCardProps {
   plant: Plant;
@@ -12,6 +14,9 @@ interface PlantCardProps {
 }
 
 const PlantCard: React.FC<PlantCardProps> = ({ plant, onAddToCart }) => {
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const discountPercentage = plant.originalPrice 
     ? Math.round(((plant.originalPrice - plant.price) / plant.originalPrice) * 100)
     : 0;
@@ -105,15 +110,17 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, onAddToCart }) => {
               View Details
             </Button>
           </Link>
-          <Button
-            variant="nature"
-            onClick={() => onAddToCart?.(plant)}
-            disabled={!plant.inStock}
-            className="flex-1"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
-          </Button>
+          {!isAdmin && (
+            <Button
+              variant="nature"
+              onClick={() => (onAddToCart ? onAddToCart(plant) : addToCart(plant))}
+              disabled={!plant.inStock}
+              className="flex-1"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Add to Cart
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

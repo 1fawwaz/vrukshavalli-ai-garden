@@ -151,8 +151,8 @@ const CartPage: React.FC = () => {
             </CardContent>
             
             <CardFooter className="flex-col gap-4">
-              <Button variant="nature" size="lg" className="w-full">
-                Proceed to Checkout
+              <Button variant="nature" size="lg" className="w-full" asChild>
+                <Link to="/checkout">Proceed to Checkout</Link>
               </Button>
               <Button variant="outline" className="w-full">
                 Apply Coupon Code
