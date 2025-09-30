@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Search, Leaf, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Leaf, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import ProductSearch from './ProductSearch';
 
 const Navigation: React.FC = () => {
@@ -12,7 +14,8 @@ const Navigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { getTotalItems } = useCart();
-  const { user, logout } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
+  const { toast } = useToast();
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -30,18 +33,22 @@ const Navigation: React.FC = () => {
 
   const handleAuthClick = () => {
     if (user) {
-      if (user.role === 'admin') {
+      if (isAdmin) {
         navigate('/admin');
       } else {
         navigate('/dashboard');
       }
     } else {
-      navigate('/login');
+      navigate('/auth');
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You've been successfully logged out.",
+    });
     navigate('/');
   };
 
@@ -105,7 +112,7 @@ const Navigation: React.FC = () => {
               <div className="hidden md:flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={handleAuthClick}>
                   <User className="w-4 h-4 mr-2" />
-                  {user.name}
+                  {profile?.full_name || user?.email}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
@@ -120,7 +127,7 @@ const Navigation: React.FC = () => {
             )}
             
             {/* Hide cart for admin users */}
-            {user?.role !== 'admin' && (
+            {!isAdmin && (
               <Button variant="ghost" size="sm" className="relative" onClick={handleCartClick}>
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Cart
@@ -171,11 +178,11 @@ const Navigation: React.FC = () => {
               {user ? (
                 <>
                   <Link
-                    to={user.role === 'admin' ? '/admin' : '/dashboard'}
+                    to={isAdmin ? '/admin' : '/dashboard'}
                     className="block px-4 py-3 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {user.role === 'admin' ? 'Admin Dashboard' : 'My Account'}
+                    {isAdmin ? 'Admin Dashboard' : 'My Account'}
                   </Link>
                   <Button
                     variant="ghost"
@@ -191,7 +198,7 @@ const Navigation: React.FC = () => {
                 </>
               ) : (
                 <Link
-                  to="/login"
+                  to="/auth"
                   className="block px-4 py-3 rounded-md text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
                   onClick={() => setIsMenuOpen(false)}
                 >

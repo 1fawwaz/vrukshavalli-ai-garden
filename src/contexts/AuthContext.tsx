@@ -1,20 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'admin' | 'customer';
-}
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role?: 'admin' | 'customer') => Promise<boolean>;
-  logout: () => void;
-  register: (userData: Omit<User, 'id' | 'role'> & { password: string }) => Promise<boolean>;
+  session: Session | null;
+  profile: any | null;
   isLoading: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,136 +23,67 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Mock users database
-  const mockUsers = [
-    {
-      id: '1',
-      name: 'Admin',
-      email: 'admin@vrukshavalli.com',
-      phone: '+91 07719890777',
-      password: 'admin123',
-      role: 'admin' as const
-    },
-    {
-      id: '2',
-      name: 'Priya Sharma',
-      email: 'priya@example.com',
-      phone: '+91 07719890777',
-      password: 'customer123',
-      role: 'customer' as const
-    }
-  ];
-
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem('vrukshavalli_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        localStorage.removeItem('vrukshavalli_user');
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch profile data
+          setTimeout(async () => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            setProfile(profileData);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
       }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string, role: 'admin' | 'customer' = 'customer'): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = mockUsers.find(u => 
-      u.email === email && 
-      u.password === password && 
-      u.role === role
     );
 
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('vrukshavalli_user', JSON.stringify(userWithoutPassword));
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
       
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${foundUser.name}!`,
-      });
-      
-      setIsLoading(false);
-      return true;
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
-        variant: "destructive"
-      });
-      setIsLoading(false);
-      return false;
-    }
-  };
-
-  const register = async (userData: Omit<User, 'id' | 'role'> & { password: string }): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user already exists
-    const existingUser = mockUsers.find(u => u.email === userData.email);
-    if (existingUser) {
-      toast({
-        title: "Registration Failed",
-        description: "User with this email already exists.",
-        variant: "destructive"
-      });
-      setIsLoading(false);
-      return false;
-    }
-
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      role: 'customer'
-    };
-
-    // In a real app, this would be stored in a backend
-    mockUsers.push({
-      ...newUser,
-      password: userData.password
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            setProfile(data);
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false);
+      }
     });
 
-    setUser(newUser);
-    localStorage.setItem('vrukshavalli_user', JSON.stringify(newUser));
-    
-    toast({
-      title: "Registration Successful",
-      description: `Welcome to Vrukshavalli, ${newUser.name}!`,
-    });
-    
-    setIsLoading(false);
-    return true;
-  };
+    return () => subscription.unsubscribe();
+  }, []);
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('vrukshavalli_user');
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
-  };
+  const isAdmin = profile?.role === 'admin';
 
   const value = {
     user,
-    login,
-    logout,
-    register,
-    isLoading
+    session,
+    profile,
+    isLoading,
+    isAdmin
   };
 
   return (

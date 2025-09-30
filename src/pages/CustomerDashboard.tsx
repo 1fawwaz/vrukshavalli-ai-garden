@@ -12,7 +12,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Link } from 'react-router-dom';
 
 const CustomerDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [orders, setOrders] = useLocalStorage('vrukshavalli_orders', []);
 
@@ -23,7 +23,7 @@ const CustomerDashboard: React.FC = () => {
     }
   }, [setOrders]);
 
-  const userOrders = orders.filter((order: any) => order.customer?.name === user?.name || true);
+  const userOrders = orders.filter((order: any) => order.customer?.name === profile?.full_name || true);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -43,7 +43,7 @@ const CustomerDashboard: React.FC = () => {
               <User className="w-8 h-8 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Welcome back, {user?.name}!</h1>
+              <h1 className="text-2xl font-bold">Welcome back, {profile?.full_name}!</h1>
               <p className="text-muted-foreground">Manage your orders and profile</p>
             </div>
           </div>
@@ -140,7 +140,7 @@ const CustomerDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue={user?.name} />
+                    <Input id="name" defaultValue={profile?.full_name} />
                   </div>
                   <div>
                     <Label htmlFor="email">Email</Label>
@@ -149,7 +149,7 @@ const CustomerDashboard: React.FC = () => {
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" defaultValue={user?.phone} />
+                  <Input id="phone" defaultValue={profile?.phone} />
                 </div>
                 <Button variant="nature">Update Profile</Button>
               </CardContent>

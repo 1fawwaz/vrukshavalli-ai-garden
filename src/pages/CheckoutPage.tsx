@@ -11,12 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 
 const CheckoutPage: React.FC = () => {
   const { items, getTotalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [name, setName] = useState(user?.name || '');
-  const [phone, setPhone] = useState(user?.phone || '');
+  const [name, setName] = useState(profile?.full_name || '');
+  const [phone, setPhone] = useState(profile?.phone || '');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
 

@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -7,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
 import Home from "@/pages/Home";
 import CategoryPage from "@/pages/CategoryPage";
 import PlantDetailPage from "@/pages/PlantDetailPage";
@@ -14,8 +14,7 @@ import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import CustomerDashboard from "@/pages/CustomerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
-import LoginPage from '@/pages/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
+import Auth from '@/pages/Auth';
 import CareGuide from '@/pages/CareGuide';
 import NotFound from "./pages/NotFound";
 
@@ -27,7 +26,6 @@ const App = () => (
       <AuthProvider>
         <CartProvider>
           <Toaster />
-          <Sonner />
           <BrowserRouter>
             <div className="min-h-screen bg-background flex flex-col">
               <Navigation />
@@ -38,8 +36,7 @@ const App = () => (
                   <Route path="/plant/:id" element={<PlantDetailPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/auth" element={<Auth />} />
                   <Route path="/dashboard" element={<CustomerDashboard />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/care-guide" element={<CareGuide />} />
@@ -47,6 +44,7 @@ const App = () => (
                 </Routes>
               </main>
               <Footer />
+              <ChatBot />
             </div>
           </BrowserRouter>
         </CartProvider>
