@@ -76,7 +76,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = profile?.role === 'admin';
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle()
+        .then(({ data }) => {
+          setIsAdmin(!!data);
+        });
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
 
   const value = {
     user,
