@@ -26,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,18 +38,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch profile data
+          // Fetch profile and role data
           setTimeout(async () => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
+            const [profileResult, roleResult] = await Promise.all([
+              supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single(),
+              supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .eq('role', 'admin')
+                .maybeSingle()
+            ]);
             
-            setProfile(profileData);
+            setProfile(profileResult.data);
+            setIsAdmin(!!roleResult.data);
           }, 0);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -59,15 +70,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            setProfile(data);
-            setIsLoading(false);
-          });
+        Promise.all([
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single(),
+          supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .eq('role', 'admin')
+            .maybeSingle()
+        ]).then(([profileResult, roleResult]) => {
+          setProfile(profileResult.data);
+          setIsAdmin(!!roleResult.data);
+          setIsLoading(false);
+        });
       } else {
         setIsLoading(false);
       }
@@ -75,24 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle()
-        .then(({ data }) => {
-          setIsAdmin(!!data);
-        });
-    } else {
-      setIsAdmin(false);
-    }
-  }, [user]);
 
   const value = {
     user,
