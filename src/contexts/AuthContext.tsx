@@ -9,6 +9,7 @@ interface AuthContextType {
   profile: any | null;
   isLoading: boolean;
   isAdmin: boolean;
+  userRoles: string[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
@@ -40,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           // Fetch profile and role data
           setTimeout(async () => {
-            const [profileResult, roleResult] = await Promise.all([
+            const [profileResult, rolesResult] = await Promise.all([
               supabase
                 .from('profiles')
                 .select('*')
@@ -50,15 +52,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .from('user_roles')
                 .select('role')
                 .eq('user_id', session.user.id)
-                .eq('role', 'admin')
-                .maybeSingle()
             ]);
             
             setProfile(profileResult.data);
-            setIsAdmin(!!roleResult.data);
+            const roles = rolesResult.data?.map(r => r.role) || [];
+            setUserRoles(roles);
+            setIsAdmin(roles.includes('admin'));
           }, 0);
         } else {
           setProfile(null);
+          setUserRoles([]);
           setIsAdmin(false);
         }
       }
@@ -80,11 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .from('user_roles')
             .select('role')
             .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .maybeSingle()
-        ]).then(([profileResult, roleResult]) => {
+        ]).then(([profileResult, rolesResult]) => {
           setProfile(profileResult.data);
-          setIsAdmin(!!roleResult.data);
+          const roles = rolesResult.data?.map(r => r.role) || [];
+          setUserRoles(roles);
+          setIsAdmin(roles.includes('admin'));
           setIsLoading(false);
         });
       } else {
@@ -100,7 +103,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     profile,
     isLoading,
-    isAdmin
+    isAdmin,
+    userRoles
   };
 
   return (
