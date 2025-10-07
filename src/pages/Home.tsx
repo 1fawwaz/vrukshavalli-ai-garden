@@ -9,7 +9,7 @@ import { plants, categories } from '@/data/plants';
 import indoorPlantsImage from '@/assets/indoor-plants.jpg';
 import outdoorPlantsImage from '@/assets/outdoor-plants.jpg';
 import exoticPlantsImage from '@/assets/exotic-plants.jpg';
-import foundersImage from '@/assets/vrukshavalli-founders.jpg';
+import foundersImage from '@/assets/vrukshavalli-founders.png';
 
 const Home: React.FC = () => {
   const featuredPlants = plants.slice(0, 6);
