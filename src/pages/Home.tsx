@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf, Shield, Truck, HeadphonesIcon } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import HeroSection from '@/components/HeroSection';
@@ -9,6 +9,7 @@ import { plants, categories } from '@/data/plants';
 import indoorPlantsImage from '@/assets/indoor-plants.jpg';
 import outdoorPlantsImage from '@/assets/outdoor-plants.jpg';
 import exoticPlantsImage from '@/assets/exotic-plants.jpg';
+import foundersImage from '@/assets/vrukshavalli-founders.jpg';
 
 const Home: React.FC = () => {
   const featuredPlants = plants.slice(0, 6);
@@ -18,29 +19,6 @@ const Home: React.FC = () => {
     outdoor: outdoorPlantsImage,
     exotic: exoticPlantsImage,
   };
-
-  const benefits = [
-    {
-      icon: Leaf,
-      title: 'Premium Quality',
-      description: 'Hand-picked, healthy plants with quality guarantee'
-    },
-    {
-      icon: Truck,
-      title: 'Free Delivery',
-      description: 'Free delivery within Ratnagiri city limits'
-    },
-    {
-      icon: Shield,
-      title: 'Plant Guarantee',
-      description: '30-day replacement guarantee on all plants'
-    },
-    {
-      icon: HeadphonesIcon,
-      title: '24/7 Plant Care Support',
-      description: 'Expert advice via WhatsApp & AI chatbot'
-    }
-  ];
 
   return (
     <div className="min-h-screen">
@@ -125,34 +103,50 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Story Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-              Why Choose Vrukshavalli?
+              Story of Vrukshavalli
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              We're committed to bringing you the healthiest plants and the best service
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit) => (
-              <Card key={benefit.title} className="text-center border-border hover:shadow-soft transition-all duration-300 bg-background/50">
-                <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                    <benefit.icon className="w-8 h-8 text-primary-foreground" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3 text-foreground">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {benefit.description}
-                  </p>
-                </CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div className="order-2 lg:order-1">
+              <div className="space-y-6 text-muted-foreground leading-relaxed">
+                <p>
+                  What started as a shared love for plants during Madhuri's B.Tech in Agricultural Engineering and Pratik's B.Sc in Horticulture soon turned into a life mission.
+                </p>
+                <p>
+                  Leaving behind a well-settled corporate job, Madhuri chose to follow her heart and joined Pratik in the family nursery business at Ratnagiri — combining technical knowledge with hands-on passion.
+                </p>
+                <p>
+                  In 2017, they started Vrukshavalli, the first-of-its-kind plant boutique in the entire Konkan region, specially created for urban plant lovers who wanted to experience gardening in simple and modern ways.
+                </p>
+                <p>
+                  From indoor and outdoor plants, gardening tools, and decorative planters, to balcony garden makeovers, vertical gardens, and landscape designing, Vrukshavalli has become a trusted destination for everything green.
+                </p>
+                <p>
+                  Our mission goes beyond selling plants — we want to inspire every Indian home to bring a touch of nature indoors, live sustainably, and celebrate the joy of growing something with their own hands.
+                </p>
+                <p className="font-semibold text-foreground">
+                  Today, with a thriving online community of 14,000+ followers and 5,000+ happy customers, Vrukshavalli continues to grow —
+                </p>
+                <p className="text-primary font-semibold text-lg italic">
+                  "Adding green touch to your life."
+                </p>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2">
+              <Card className="overflow-hidden border-border shadow-nature">
+                <img
+                  src={foundersImage}
+                  alt="Madhuri and Pratik - Founders of Vrukshavalli"
+                  className="w-full h-full object-cover"
+                />
               </Card>
-            ))}
+            </div>
           </div>
         </div>
       </section>
