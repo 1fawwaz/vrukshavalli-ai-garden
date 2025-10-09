@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Package, Users, TrendingUp, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,44 +7,109 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminPlantManager from '@/components/AdminPlantManager';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminDashboard: React.FC = () => {
   const [selectedPlant, setSelectedPlant] = useState<string | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   // Mock admin data
   const stats = [
     { title: 'Total Plants', value: '500+', icon: Package, color: 'text-blue-600' },
-    { title: 'Total Orders', value: '1,234', icon: TrendingUp, color: 'text-green-600' },
+    { title: 'Total Orders', value: orders.length.toString(), icon: TrendingUp, color: 'text-green-600' },
     { title: 'Total Customers', value: '856', icon: Users, color: 'text-purple-600' },
     { title: 'Revenue (Month)', value: '₹1,25,000', icon: TrendingUp, color: 'text-orange-600' },
   ];
 
-  const recentOrders = [
-    {
-      id: 'ORD001',
-      customer: 'Priya Sharma',
-      items: 2,
-      total: 1299,
-      status: 'pending',
-      date: '2024-01-15'
-    },
-    {
-      id: 'ORD002',
-      customer: 'Raj Patel',
-      items: 1,
-      total: 599,
-      status: 'shipped',
-      date: '2024-01-14'
-    },
-    {
-      id: 'ORD003',
-      customer: 'Anita Kumar',
-      items: 3,
-      total: 1899,
-      status: 'delivered',
-      date: '2024-01-13'
-    },
-  ];
+  // Fetch orders from database
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Set up realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          console.log('New order received!', payload);
+          
+          // Add new order to the list
+          setOrders(prev => [payload.new, ...prev]);
+          
+          // Show toast notification
+          toast({
+            title: "New Order Received!",
+            description: `Order #${payload.new.id.slice(0, 8)} - ₹${payload.new.total_amount}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [toast]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load orders",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus as any })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Update local state
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+
+      toast({
+        title: "Order Updated",
+        description: `Order status changed to ${newStatus}`,
+      });
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status",
+        variant: "destructive"
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -131,50 +196,74 @@ const AdminDashboard: React.FC = () => {
               </Select>
             </div>
 
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <Card key={order.id}>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-semibold">Order #{order.id}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Customer: {order.customer}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Date: {order.date}
-                        </p>
-                      </div>
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm text-muted-foreground">{order.items} items</p>
-                        <p className="font-semibold">₹{order.total}</p>
+            {loading ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">Loading orders...</p>
+                </CardContent>
+              </Card>
+            ) : orders.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Orders Yet</h3>
+                  <p className="text-muted-foreground">
+                    Orders will appear here as customers place them.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <Card key={order.id}>
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="font-semibold">Order #{order.id.slice(0, 8)}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Customer: {order.shipping_name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Email: {order.shipping_email}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Date: {new Date(order.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Badge className={getStatusColor(order.status)}>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </Badge>
                       </div>
                       
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">View Details</Button>
-                        <Select defaultValue={order.status}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold">₹{order.total_amount}</p>
+                          <p className="text-sm text-muted-foreground">Payment: {order.payment_method}</p>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">View Details</Button>
+                          <Select 
+                            defaultValue={order.status}
+                            onValueChange={(value) => updateOrderStatus(order.id, value)}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="processing">Processing</SelectItem>
+                              <SelectItem value="shipped">Shipped</SelectItem>
+                              <SelectItem value="delivered">Delivered</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Customers Tab */}
