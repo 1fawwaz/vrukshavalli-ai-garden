@@ -84,6 +84,9 @@ const AdminDashboard: React.FC = () => {
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
     try {
       const { error } = await supabase
         .from('orders')
@@ -96,6 +99,24 @@ const AdminDashboard: React.FC = () => {
       setOrders(prev => prev.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
       ));
+
+      // Send email notification if shipped or delivered
+      if (newStatus === 'shipped' || newStatus === 'delivered') {
+        try {
+          await supabase.functions.invoke('send-order-email', {
+            body: {
+              to: order.shipping_email,
+              orderId: order.id.substring(0, 8),
+              type: newStatus,
+              customerName: order.shipping_name,
+              items: [],
+              total: order.total_amount
+            }
+          });
+        } catch (emailErr) {
+          console.error('Email error:', emailErr);
+        }
+      }
 
       toast({
         title: "Order Updated",

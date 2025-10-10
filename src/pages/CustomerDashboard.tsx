@@ -8,22 +8,85 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const CustomerDashboard: React.FC = () => {
   const { user, profile } = useAuth();
+  const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
-  const [orders, setOrders] = useLocalStorage('vrukshavalli_orders', []);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedOrders = localStorage.getItem('vrukshavalli_orders');
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
+    if (user) {
+      fetchOrders();
     }
-  }, [setOrders]);
+  }, [user]);
 
-  const userOrders = orders.filter((order: any) => order.customer?.name === profile?.full_name || true);
+  // Set up realtime subscription for order updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('user-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Order updated:', payload);
+          
+          // Update order in local state
+          setOrders(prev => prev.map(order => 
+            order.id === payload.new.id ? payload.new : order
+          ));
+          
+          // Show toast notification
+          toast({
+            title: "Order Status Updated! 🌱",
+            description: `Your order is now ${payload.new.status}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast]);
+
+  const fetchOrders = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, order_items(*, plant:plants(*))')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load orders",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const userOrders = orders;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -88,11 +151,11 @@ const CustomerDashboard: React.FC = () => {
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className="font-semibold">Order #{order.id}</h3>
+                          <h3 className="font-semibold">Order #{order.id.substring(0, 8)}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Date: {new Date(order.date).toLocaleDateString()}
+                            Date: {new Date(order.created_at).toLocaleDateString()}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
                             Status: <Badge className={getStatusColor(order.status)}>
                               {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                             </Badge>
@@ -101,15 +164,15 @@ const CustomerDashboard: React.FC = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        {order.items?.map((item: any, idx: number) => (
-                          <div key={idx} className="text-sm text-muted-foreground">
-                            {item.plant?.name || item.name} × {item.quantity} - ₹{(item.plant?.price || item.price) * item.quantity}
+                        {order.order_items?.map((item: any) => (
+                          <div key={item.id} className="text-sm text-muted-foreground">
+                            {item.plant?.name} × {item.quantity} - ₹{item.price_at_time * item.quantity}
                           </div>
                         )) || <div className="text-sm text-muted-foreground">No items found</div>}
                       </div>
                       
                       <div className="flex justify-between items-center mt-4">
-                        <p className="font-semibold">₹{Math.round(order.total)}</p>
+                        <p className="font-semibold">₹{Math.round(order.total_amount)}</p>
                         <Button variant="outline" size="sm">View Details</Button>
                       </div>
                     </CardContent>

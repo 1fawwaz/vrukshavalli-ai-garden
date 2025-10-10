@@ -25,7 +25,7 @@ const CheckoutPage: React.FC = () => {
   const tax = subtotal * 0.18;
   const total = useMemo(() => subtotal + shipping + tax, [subtotal, shipping, tax]);
 
-  const placeOrder = (e: React.FormEvent) => {
+  const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim() || !address.trim()) {
       toast({ title: 'Missing details', description: 'Please fill name, phone and address.', variant: 'destructive' });
@@ -36,29 +36,80 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    const order = {
-      id: `ORD-${Date.now()}`,
-      items,
-      subtotal,
-      shipping,
-      tax: Math.round(tax),
-      total: Math.round(total),
-      customer: { name, phone, address },
-      notes: notes.trim() || undefined,
-      status: 'pending',
-      date: new Date().toISOString(),
-    };
+    if (!user) {
+      toast({ title: 'Please log in', description: 'You need to be logged in to place an order.', variant: 'destructive' });
+      navigate('/auth');
+      return;
+    }
 
     try {
-      const existing = localStorage.getItem('vrukshavalli_orders');
-      const orders = existing ? JSON.parse(existing) : [];
-      orders.unshift(order);
-      localStorage.setItem('vrukshavalli_orders', JSON.stringify(orders));
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Create order in database
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total_amount: Math.round(total),
+          status: 'pending',
+          shipping_name: name,
+          shipping_phone: phone,
+          shipping_email: user.email || '',
+          shipping_address: address,
+          shipping_city: address.split(',')[0] || '',
+          shipping_state: 'Maharashtra',
+          shipping_pincode: '415612',
+          payment_method: 'COD'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = items.map(item => ({
+        order_id: orderData.id,
+        plant_id: item.plant.id,
+        quantity: item.quantity,
+        price_at_time: item.plant.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // Send confirmation email
+      await supabase.functions.invoke('send-order-email', {
+        body: {
+          to: user.email,
+          orderId: orderData.id.substring(0, 8),
+          type: 'confirmation',
+          customerName: name,
+          items: items.map(item => ({
+            name: item.plant.name,
+            quantity: item.quantity,
+            price: item.plant.price
+          })),
+          total: Math.round(total),
+          shippingAddress: `${name}\n${address}\n${phone}`
+        }
+      });
+
       clearCart();
-      toast({ title: 'Order placed!', description: `Your order ${order.id} has been created.` });
+      toast({ 
+        title: 'Yay! Order placed! 🌱', 
+        description: `Your order ${orderData.id.substring(0, 8)} is confirmed. Check your email!` 
+      });
       navigate('/dashboard');
-    } catch (err) {
-      toast({ title: 'Error', description: 'Could not place order. Try again.', variant: 'destructive' });
+    } catch (err: any) {
+      console.error('Order error:', err);
+      toast({ 
+        title: 'Oops—our plant got shy', 
+        description: 'Could not place order. Try again in a moment.', 
+        variant: 'destructive' 
+      });
     }
   };
 
