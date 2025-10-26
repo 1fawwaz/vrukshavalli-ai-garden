@@ -8,6 +8,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Leaf, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+
+// Input validation schemas
+const signUpSchema = z.object({
+  email: z.string().email('Invalid email address').max(255, 'Email must be less than 255 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be less than 128 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/\d/, 'Password must contain at least one number'),
+  fullName: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes'),
+});
+
+const signInSchema = z.object({
+  email: z.string().email('Invalid email address').max(255),
+  password: z.string().min(1, 'Password is required'),
+});
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -23,16 +43,6 @@ const Auth: React.FC = () => {
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!isPasswordValid) {
-      toast({
-        title: 'Invalid password',
-        description: 'Please meet all password requirements.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -40,12 +50,19 @@ const Auth: React.FC = () => {
     const fullName = formData.get('fullName') as string;
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Validate inputs with zod
+      const validated = signUpSchema.parse({
         email,
         password,
+        fullName,
+      });
+
+      const { error } = await supabase.auth.signUp({
+        email: validated.email,
+        password: validated.password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: validated.fullName,
             role: 'customer'
           },
           emailRedirectTo: `${window.location.origin}/`
@@ -62,11 +79,19 @@ const Auth: React.FC = () => {
       setPassword('');
       navigate('/');
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -81,9 +106,15 @@ const Auth: React.FC = () => {
     const signinPassword = formData.get('password') as string;
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Validate inputs with zod
+      const validated = signInSchema.parse({
         email,
         password: signinPassword,
+      });
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validated.email,
+        password: validated.password,
       });
 
       if (error) throw error;
@@ -95,11 +126,19 @@ const Auth: React.FC = () => {
       
       navigate('/');
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
